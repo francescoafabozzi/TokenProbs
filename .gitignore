@@ -1,0 +1,4 @@
+dist/
+build/
+GenCasting.egg-info/
+setup.py/
