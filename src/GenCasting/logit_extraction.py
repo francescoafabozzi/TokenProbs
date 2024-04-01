@@ -20,18 +20,21 @@ from torch.utils.data import Dataset,DataLoader
 from accelerate import Accelerator
 from peft import LoraConfig
 from trl import SFTTrainer,DataCollatorForCompletionOnlyLM
+from peft import PeftModel
 
 
 class GenerativeForecaster:
 
-    def __init__(self,model_name,quantization=None):
+    def __init__(self,model_name,adapter_name=None,quantization=None):
         '''
         model_name: str
         
         '''
 
         self.model_name = model_name
+        self.adapter_name = adapter_name
         self.load_model(quantization)
+        self.load_adapter()
 
 
     def load_model(self,quantization=None):
@@ -61,6 +64,13 @@ class GenerativeForecaster:
         tokenizer.pad_token = tokenizer.eos_token
         self.tokenizer = tokenizer
 
+    def load_adapter(self):
+        if self.adapter_name == None:
+            pass
+        else:
+            self.model = PeftModel.from_pretrained(
+                self.model,self.adapter_name
+            )
 
     
     def identify_tokens(self,class_tokens = None):
@@ -101,7 +111,7 @@ class GenerativeForecaster:
     def get_dataloader(
         self,
         input_text,
-        batch_size,
+        batch_size=1,
     ):
 
         ds = GenerativeDataset(input_text,self.tokenizer)
@@ -171,9 +181,14 @@ class GenerativeForecaster:
                 attention_mask = batch['attention_mask'].to('cuda'),
                 max_new_tokens = max_new_tokens
             )
-            
-            preds.extend([output[i,batch['length'][i]:] for i in range(len(batch['length']))])
 
+            preds.extend(
+                self.tokenizer.batch_decode(
+                    [output[i,batch['length'][i]:] for i in range(len(batch['length']))]
+                )
+            )
+
+        preds = [i.replace('</s>','') for i in preds]
         return preds
 
     def trainer_setup(
