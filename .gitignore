@@ -1,4 +1,6 @@
-dist/
-build/
-GenCasting.egg-info/
-setup.py/
+dist/*
+build/*
+GenCasting.egg-info/*
+setup.py
+.ipynb_checkpoints/*
+__pycache__/*
