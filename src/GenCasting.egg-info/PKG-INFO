@@ -1,0 +1,23 @@
+Metadata-Version: 2.1
+Name: GenCasting
+Version: 0.0.6
+Summary: Extract token-level probabilities from LLMs for classification-type outputs.
+Author: Francesco A. Fabozzi
+Author-email: francescoafabozzi@gmail.com
+Keywords: python,LLMs,finance,forecasting,language models,huggingface
+Classifier: Development Status :: 1 - Planning
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: bitsandbytes
+Requires-Dist: datasets
+Requires-Dist: accelerate
+Requires-Dist: loralib
+Requires-Dist: transformers
+Requires-Dist: peft
+Requires-Dist: trl
+
+
+## GenCasting 
+
+
+Description to come.
