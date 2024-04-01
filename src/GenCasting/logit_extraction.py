@@ -31,11 +31,8 @@ class GenerativeForecaster:
         '''
 
         self.model_name = model_name
-        self.tokens = class_tokens
-        
         self.load_model(quantization)
-        self.token_dict = self.identify_tokens(self.tokens)
-        
+
 
     def load_model(self,quantization=None):
         if quantization == '8bit':
@@ -64,7 +61,7 @@ class GenerativeForecaster:
         tokenizer.pad_token = tokenizer.eos_token
         self.tokenizer = tokenizer
 
-    pass
+
     
     def identify_tokens(self,class_tokens = None):
 
@@ -113,13 +110,17 @@ class GenerativeForecaster:
         
         return dataloader
 
-    def logit_extraction(self,input_data,batch_size=None,gpu=True):
-
+    def logit_extraction(self,input_data,tokens,batch_size=None):
+        self.token_dict = self.identify_tokens(tokens)
+        
         if type(input_data) == list:
             try:
                 input_data = self.get_dataloader(input_data,batch_size=batch_size)
             except:
                 raise ValueError('Batch size must be specified if text list is provided.')
+        
+        elif type(input_data) == str:
+            input_data = self.get_dataloader([input_data],batch_size=batch_size)
 
         if torch.cuda.is_available():
             device = 'cuda'
@@ -135,8 +136,10 @@ class GenerativeForecaster:
                 attention_mask = batch['attention_mask'].to(device)
             ).logits.detach().cpu()
 
-            
-            generated = torch.vstack([output[i,batch['length'][i]-1,:] for i in range(len(batch['length']))])
+            # Extract predictions following end of prompt
+            generated = torch.vstack(
+                [output[i,batch['length'][i]-1,:] for i in range(len(batch['length']))]
+            )
             preds.append(
                 softmax(generated[:,list(self.token_dict.values())],dim=-1).numpy()
             )
@@ -144,6 +147,34 @@ class GenerativeForecaster:
         output_df = pd.DataFrame(np.vstack(preds),columns=list(self.token_dict.keys()))
 
         return output_df
+
+    def text_generation(self,input_data,batch_size=1,max_new_tokens=100):
+        if type(input_data) == list:
+            try:
+                input_data = self.get_dataloader(input_data,batch_size=batch_size)
+            except:
+                raise ValueError('Batch size must be specified if text list is provided.')
+        
+        elif type(input_data) == str:
+            input_data = self.get_dataloader([input_data],batch_size=batch_size)
+
+        if torch.cuda.is_available():
+            device = 'cuda'
+        else:
+            device = 'cpu'
+
+        preds = []
+        self.model.eval()
+        for batch in tqdm(input_data):
+            output = self.model.generate(
+                input_ids = batch['input_ids'].to('cuda'),
+                attention_mask = batch['attention_mask'].to('cuda'),
+                max_new_tokens = max_new_tokens
+            )
+            
+            preds.extend([output[i,batch['length'][i]:] for i in range(len(batch['length']))])
+
+        return preds
 
     def trainer_setup(
         self,
