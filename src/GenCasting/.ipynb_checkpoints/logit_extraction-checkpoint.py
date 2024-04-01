@@ -24,7 +24,7 @@ from trl import SFTTrainer,DataCollatorForCompletionOnlyLM
 
 class GenerativeForecaster:
 
-    def __init__(self,model_name,class_tokens,quantization=None,load_model=True):
+    def __init__(self,model_name,quantization=None):
 
         self.model_name = model_name
         self.tokens = class_tokens
