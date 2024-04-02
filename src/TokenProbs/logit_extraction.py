@@ -119,7 +119,7 @@ class LogitExtractor:
         
         return dataloader
 
-    def logit_extraction(self,input_data,tokens,batch_size=None):
+    def logit_extraction(self,input_data,tokens,batch_size=1):
         self.token_dict = self.identify_tokens(tokens)
         
         if type(input_data) == list:
@@ -190,6 +190,12 @@ class LogitExtractor:
         preds = [i.replace('</s>','') for i in preds]
         return preds
 
+    def get_response_seq(self,response_seq):
+        if type(response_seq) == list:
+            return response_seq
+        else:
+            return self.tokenizer(response_seq)['input_ids'][1:]
+
     def trainer_setup(
         self,
         train_ds,
@@ -201,6 +207,8 @@ class LogitExtractor:
         training_args = None,
         cache_dir = '~/.cache/TokenProbs'
     ):
+
+        response_seq = self.get_response_seq(self,response_seq)
 
         peft_params = LoraConfig(
             lora_alpha = lora_alpha,

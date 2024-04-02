@@ -26,7 +26,7 @@ sentence = "AAPL shares were up in morning trading, but closed even on the day."
 prompt = \
 """Instructions: What is the sentiment of this news article? Select from {positive/neutral/negative}.
 \nInput: %text_input
-Answer: """
+Answer:"""
 
 prompted_sentence = prompt.replace("%text_input",sentence)
 
@@ -79,7 +79,7 @@ extractor = LogitExtractor(
 # Set up SFFTrainer
 extractor.trainer_setup(
     train_ds = training_texts, #either a dataloader object or text list
-    response_seq = "\nAnswer: ", # Tells trainer to train only on text following "\nAnswer: "
+    response_seq = "\nAnswer:", # Tells trainer to train only on text following "\nAnswer: "
     # Input can be text string or list of TokenIDs. Be careful, tokens can differ based on context.
     lora_alpha=16,
     lora_rank=32,
