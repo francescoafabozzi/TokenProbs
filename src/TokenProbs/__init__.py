@@ -1,1 +1,1 @@
-from GenCasting.logit_extraction import *
+from .logit_extraction import LogitExtractor, GenerativeDataset
