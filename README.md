@@ -12,28 +12,93 @@ pip install GenCasting
 
 ## Usage
 ```python
-from TokenProbs import LogitExtractor
+from TokenProbs.logit_extraction import LogitExtractor
 
 extractor = LogitExtractor(
     model_name = 'mistralai/Mistral-7B-Instruct-v0.1',
     quantization="8bit" # None = Full precision, "4bit" also suported
 )
 
-# Prompt sentence with 
-prompt = "Instructions: What is the sentiment of this news article? Select from {positive/neutral/negative}.\nInput: %text_input\nAnswer: "
+# Test sentence
 sentence = "AAPL shares were up in morning trading, but closed even on the day."
+
+# Prompt sentence
+prompt = \
+"""Instructions: What is the sentiment of this news article? Select from {positive/neutral/negative}.
+\nInput: %text_input
+Answer: """
+
 prompted_sentence = prompt.replace("%text_input",sentence)
 
+# Provide tokens to extract (can be TokenIDs or strings)
 pred_tokens = ['positive','neutral','negative']
 
-probabilities = extractor.logit_extraction(prompted_sentence,pred_tokens)
 
-# Display the probabilities
+# Extract normalized token probabilities
+probabilities = extractor.logit_extraction(
+    input_data = prompted_sentence,
+    tokens = pred_tokens,
+    batch_size=1
+)
+
 print(f"Probabilities: {probabilities}")
 Probabilities: {'positive': 0.7, 'neutral': 0.2, 'negative': 0.1}
+
+# Compare to text output
+text_output = extractor.text_generation(input_data,batch_size=1)
 ```
 
-## Usage
+## Additional Features
+
+`LogitExtractor` also provides functionality for applying Low-rank Adaptation (LoRA) fine-tuning tailored to extracting logit scores for next-token predictions.
+
+```python
+from datasets import load_dataset
+from TokenProbs.logit_extraction import LogitExtractor
+
+# Load dataset
+dataset = load_dataset("financial_phrasebank",'sentences_50agree')['train']
+# Apply training and test split
+dataset = dataset.train_test_split(seed=42)
+train = dataset['train']
+
+# Convert class labels to text
+labels = [{0:'negative',1:'neutral',2:'positive'}[i] for i in train['label']]
+# Get sentences 
+prompted_sentences = [prompt.replace("%text_input",sent) for sent in train['sentence']]
+
+# Add labels to prompted sentences
+training_texts = [prompted_sentences[i] + labels[i] for i in range(len(labels))]
+
+# Load model
+extractor = LogitExtractor(
+    model_name = 'mistralai/Mistral-7B-Instruct-v0.1',
+    quantization="8bit"
+)
+
+# Set up SFFTrainer
+extractor.trainer_setup(
+    train_ds = training_texts, #either a dataloader object or text list
+    response_seq = "\nAnswer: ", # Tells trainer to train only on text following "\nAnswer: "
+    # Input can be text string or list of TokenIDs. Be careful, tokens can differ based on context.
+    lora_alpha=16,
+    lora_rank=32,
+    lora_dropout=0.1
+)
+extractor.trainer.train()
+# Push model to huggingface
+extractor.trainer.model.push_to_hub('<HF_USERNAME>/<MODEL_NAME>')
+
+# Load model later
+trained_model = extractor(
+    model_name = '<HF_USERNAME>/<MODEL_NAME>',
+    quantization="8bit"
+)
+```
+
+## Examples
+
+Coming soon.
 
 
 

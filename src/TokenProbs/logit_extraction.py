@@ -23,12 +23,11 @@ from trl import SFTTrainer,DataCollatorForCompletionOnlyLM
 from peft import PeftModel
 
 
-class GenerativeForecaster:
+class LogitExtractor:
 
     def __init__(self,model_name,adapter_name=None,quantization=None):
         '''
         model_name: str
-        
         '''
 
         self.model_name = model_name
@@ -200,7 +199,7 @@ class GenerativeForecaster:
         lora_rank=32,
         lora_dropout=0.1,
         training_args = None,
-        cache_dir = '~/.cache/GenCasting'
+        cache_dir = '~/.cache/TokenProbs'
     ):
 
         peft_params = LoraConfig(
