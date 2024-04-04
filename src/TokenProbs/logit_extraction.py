@@ -138,20 +138,21 @@ class LogitExtractor:
 
         preds = []
         self.model.eval()
-        for batch in tqdm(input_data):
-
-            output = self.model(
-                input_ids = batch['input_ids'].to(device),
-                attention_mask = batch['attention_mask'].to(device)
-            ).logits.detach().cpu()
-
-            # Extract predictions following end of prompt
-            generated = torch.vstack(
-                [output[i,batch['length'][i]-1,:] for i in range(len(batch['length']))]
-            )
-            preds.append(
-                softmax(generated[:,list(self.token_dict.values())],dim=-1).numpy()
-            )
+        with torch.no_grad():
+            for batch in tqdm(input_data):
+    
+                output = self.model(
+                    input_ids = batch['input_ids'].to(device),
+                    attention_mask = batch['attention_mask'].to(device)
+                ).logits.detach().cpu()
+    
+                # Extract predictions following end of prompt
+                generated = torch.vstack(
+                    [output[i,batch['length'][i]-1,:] for i in range(len(batch['length']))]
+                )
+                preds.append(
+                    softmax(generated[:,list(self.token_dict.values())],dim=-1).numpy()
+                )
 
         output_df = pd.DataFrame(np.vstack(preds),columns=list(self.token_dict.keys()))
 
@@ -174,20 +175,21 @@ class LogitExtractor:
 
         preds = []
         self.model.eval()
-        for batch in tqdm(input_data):
-            output = self.model.generate(
-                input_ids = batch['input_ids'].to('cuda'),
-                attention_mask = batch['attention_mask'].to('cuda'),
-                max_new_tokens = max_new_tokens
-            )
-
-            preds.extend(
-                self.tokenizer.batch_decode(
-                    [output[i,batch['length'][i]:] for i in range(len(batch['length']))]
+        with torch.no_grad():
+            for batch in tqdm(input_data):
+                output = self.model.generate(
+                    input_ids = batch['input_ids'].to('cuda'),
+                    attention_mask = batch['attention_mask'].to('cuda'),
+                    max_new_tokens = max_new_tokens
                 )
-            )
+    
+                preds.extend(
+                    self.tokenizer.batch_decode(
+                        [output[i,batch['length'][i]:] for i in range(len(batch['length']))]
+                    )
+                )
 
-        preds = [i.replace('</s>','') for i in preds]
+        preds = [i.replace('</s>','').replace('<s>','') for i in preds]
         return preds
 
     def get_response_seq(self,response_seq):
