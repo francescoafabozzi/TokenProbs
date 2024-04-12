@@ -38,20 +38,25 @@ class LogitExtractor:
 
     def load_model(self,quantization=None):
         if quantization == '8bit':
-            load_in_8bit = True
-            load_in_4bit = False
+            #load_in_8bit = True
+            #load_in_4bit = False
+            quantization_config = BitsAndBytesConfig(load_in_8bit=True)
         elif quantization == '4bit':
-            load_in_4bit = True
-            load_in_8bit = False
+            #load_in_4bit = True
+            #load_in_8bit = False
+            quantization_config = BitsAndBytesConfig(load_in_4bit=True)
         else:
             load_in_4bit = False
             load_in_8bit=False
+            quantization_config = None
 
         model = AutoModelForCausalLM.from_pretrained(
             self.model_name,
-            load_in_8bit= load_in_8bit,
-            load_in_4bit = load_in_4bit,
-            device_map = 'auto'
+            #load_in_8bit= load_in_8bit,
+            #load_in_4bit = load_in_4bit,
+            quantization_config = quantization_config,
+            device_map = 'auto',
+            trust_remote_code=True
         )
         model.config.use_cache = False
         model.config.pretrained_tp = 1
@@ -159,6 +164,7 @@ class LogitExtractor:
         return output_df
 
     def text_generation(self,input_data,batch_size=1,max_new_tokens=100):
+        self.tokenizer.padding_side = "left"
         if type(input_data) == list:
             try:
                 input_data = self.get_dataloader(input_data,batch_size=batch_size)
@@ -168,6 +174,8 @@ class LogitExtractor:
         elif type(input_data) == str:
             input_data = self.get_dataloader([input_data],batch_size=batch_size)
 
+        
+        
         if torch.cuda.is_available():
             device = 'cuda'
         else:
@@ -175,6 +183,8 @@ class LogitExtractor:
 
         preds = []
         self.model.eval()
+        accelerator = Accelerator()
+        self.model,input_data = accelerator.prepare(self.model,input_data)
         with torch.no_grad():
             for batch in tqdm(input_data):
                 output = self.model.generate(
@@ -189,6 +199,9 @@ class LogitExtractor:
                     )
                 )
 
+                torch.cuda.empty_cache()
+
+        self.tokenizer.padding_side = "right"
         preds = [i.replace('</s>','').replace('<s>','') for i in preds]
         return preds
 
@@ -210,7 +223,7 @@ class LogitExtractor:
         cache_dir = '~/.cache/TokenProbs'
     ):
 
-        response_seq = self.get_response_seq(self,response_seq)
+        response_seq = self.get_response_seq(response_seq)
 
         peft_params = LoraConfig(
             lora_alpha = lora_alpha,

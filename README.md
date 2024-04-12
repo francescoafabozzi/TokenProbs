@@ -7,7 +7,16 @@ Extract token-level probability scores from generative language models (GLMs) wi
 
 ```bash
 conda create -n GenCasting python=3.9
-pip install GenCasting 
+pip3 install GenCasting 
+```
+
+__Troubling Shooting__
+
+If recieving `CUDA Setup failed despite GPU being available.` Identify the location of the cuda driver, typically found under `/usr/local/` and input the following commands via the command line. The example below shows this for cuda-12.3.:
+
+```bash
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-12.3 # change 12.3 to appropriate location
+export BNB_CUDA_VERSION=123 # 123 (i.e., 12.3) also needs to be changed
 ```
 
 ## Usage
