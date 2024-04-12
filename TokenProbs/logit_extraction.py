@@ -256,6 +256,9 @@ class LogitExtractor:
             )
 
         max_seq_len = self.model.config.max_position_embeddings
+
+        if type(train_ds) not in [list,pd.DataFrame]:
+            train_ds = GenerativeDataset(train_ds,self.tokenizer)
         
         self.trainer = SFTTrainer(
             model = self.model,
