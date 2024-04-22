@@ -5,14 +5,26 @@ Extract token-level probability scores from generative language models (GLMs) wi
 
 ## Installation
 
+Install with `pip`:
+
 ```bash
-conda create -n GenCasting python=3.9
-pip3 install GenCasting 
+conda create -n TokenProbs python=3.9
+conda activate TokenProbs
+pip3 install TokenProbs 
+```
+
+Install via Github Repository:
+```bash
+conda create -n TokenProbs python=3.9
+conda activate TokenProbs
+
+git clone https://github.com/francescoafabozzi/TokenProbs.git
+pip3 install -e . # Install in editable mode 
 ```
 
 __Troubling Shooting__
 
-If recieving `CUDA Setup failed despite GPU being available.` Identify the location of the cuda driver, typically found under `/usr/local/` and input the following commands via the command line. The example below shows this for cuda-12.3.:
+If recieving `CUDA Setup failed despite GPU being available.` error, identify the location of the cuda driver, typically found under `/usr/local/` and input the following commands via the command line. The example below shows this for cuda-12.3.:
 
 ```bash
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-12.3 # change 12.3 to appropriate location
