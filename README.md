@@ -74,6 +74,8 @@ text_output = extractor.text_generation(input_data,batch_size=1)
 
 `LogitExtractor` also provides functionality for applying Low-rank Adaptation (LoRA) fine-tuning tailored to extracting logit scores for next-token predictions.
 
+Below is an example of fine-tuning Mistral on Financial Phrasebank, a financial sentiment classification dataset.
+
 ```python
 from datasets import load_dataset
 from TokenProbs import LogitExtractor
