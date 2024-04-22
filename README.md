@@ -19,6 +19,7 @@ conda create -n TokenProbs python=3.9
 conda activate TokenProbs
 
 git clone https://github.com/francescoafabozzi/TokenProbs.git
+cd TokenProbs
 pip3 install -e . # Install in editable mode 
 ```
 
