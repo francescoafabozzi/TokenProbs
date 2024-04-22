@@ -120,9 +120,9 @@ trained_model = extractor(
 )
 ```
 
-## Examples
+<!-- ## Examples -->
 
-Coming soon.
+<!-- Coming soon. -->
 
 
 
