@@ -195,19 +195,15 @@ class LogitExtractor:
                     max_new_tokens = max_new_tokens
                 )
     
-                preds.extend(
-                    self.tokenizer.batch_decode(
-                        [output[i,batch['length'][i]:] for i in range(len(batch['length']))]
-                    )
-                )
+                preds.extend(self.tokenizer.batch_decode(output))
 
                 torch.cuda.empty_cache()
 
                 if save != False:
                     pd.to_pickle(save)
 
-        self.tokenizer.padding_side = "right"
-        preds = [i.replace('</s>','').replace('<s>','') for i in preds]
+        #self.tokenizer.padding_side = "right"
+        #preds = [i.replace('</s>','').replace('<s>','') for i in preds]
         return preds
 
     def get_response_seq(self,response_seq):
