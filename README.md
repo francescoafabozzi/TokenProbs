@@ -8,14 +8,14 @@ Extract token-level probability scores from generative language models (GLMs) wi
 Install with `pip`:
 
 ```bash
-conda create -n TokenProbs python=3.9
+conda create -n TokenProbs python=3.11 # Note: not available for 3.13
 conda activate TokenProbs
 pip3 install TokenProbs 
 ```
 
 Install via Github Repository:
 ```bash
-conda create -n TokenProbs python=3.9
+conda create -n TokenProbs python=3.12 # Note: not available for 3.13
 conda activate TokenProbs
 
 git clone https://github.com/francescoafabozzi/TokenProbs.git
@@ -23,16 +23,12 @@ cd TokenProbs
 pip3 install -e . # Install in editable mode 
 ```
 
-__Troubling Shooting__
 
-If recieving `CUDA Setup failed despite GPU being available.` error, identify the location of the cuda driver, typically found under `/usr/local/` and input the following commands via the command line. The example below shows this for cuda-12.3.:
-
-```bash
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-12.3 # change 12.3 to appropriate location
-export BNB_CUDA_VERSION=123 # 123 (i.e., 12.3) also needs to be changed
-```
 
 ## Usage
+
+See `examples/FinancialPhrasebank.ipynb` for an example of using `LogitExtractor` to extract token-level probabilities for a sentiment classification task.
+
 ```python
 from TokenProbs import LogitExtractor
 
@@ -70,6 +66,48 @@ Probabilities: {'positive': 0.7, 'neutral': 0.2, 'negative': 0.1}
 text_output = extractor.text_generation(input_data,batch_size=1)
 ```
 
+## Trouble Shooting Installation
+
+__Import Errors due to `torch`__
+
+If recieving import errors due to `torch`, specific torch version may be required. Follow the steps below:
+
+__Step 1__:  Identify the CUDA versions (for GPU users):
+```bash
+nvcc --version
+``` 
+
+```bash
+nvcc: NVIDIA (R) Cuda compiler driver
+Copyright (c) 2005-2023 NVIDIA Corporation
+Built on Wed_Nov_22_10:17:15_PST_2023
+Cuda compilation tools, release 12.3, V12.3.107
+Build cuda_12.3.r12.3/compiler.33567101_0
+```
+
+In this case, the CUDA version is 12.3. 
+
+__Step 2__: Navigate to the [Pytorch website](https://pytorch.org/get-started/locally/) and select the version that matches the CUDA version.
+
+There is no cuda version for 12.3, so select torch CUDA download < 12.3 (i.e., 12.1)
+
+__Step 3__: Pip uninstall torch and download with the correct version:
+```bash
+pip3 uninstall torch
+pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+```
+
+__Issues with `bitsandbytes`__
+
+If recieving CUDA Setup failed despite GPU being available. error, identify the location of the cuda driver, typically found under /usr/local/ and input the following commands via the command line. The example below shows this for cuda-12.3.:
+
+```bash
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-12.3 # change 12.3 to appropriate location
+export BNB_CUDA_VERSION=123 # 123 (i.e., 12.3) also needs to be changed
+```
+
+
+<!-- 
 ## Additional Features
 
 `LogitExtractor` also provides functionality for applying Low-rank Adaptation (LoRA) fine-tuning tailored to extracting logit scores for next-token predictions.
@@ -119,6 +157,7 @@ trained_model = extractor(
     quantization="8bit"
 )
 ```
+-->
 
 <!-- ## Examples -->
 
