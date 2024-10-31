@@ -4,3 +4,4 @@ build/*
 setup.py
 **/__pycache__/
 **/.ipynb_checkpoints/
+scratch.py
