@@ -106,6 +106,23 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-12.3 # change 12.3 to ap
 export BNB_CUDA_VERSION=123 # 123 (i.e., 12.3) also needs to be changed
 ```
 
+__Troubling Shooting for CPU users__
+
+`torch` is compatible with CPU, but requires `numpy` version < 2.0. Thus, to run via CPU:
+```bash
+pip3 uninstall numpy
+pip3 install numpy==1.26.4
+```
+
+__Trouble Shooting for gated repositories__
+
+If recieving errors due to gated repositories, you must login to huggingface via the [command line interface (CLI)](https://huggingface.co/docs/huggingface_hub/en/guides/cli):
+
+```bash
+huggingface-cli login # You will be prompted for your access token
+# Then try to run again
+```
+
 
 <!-- 
 ## Additional Features
